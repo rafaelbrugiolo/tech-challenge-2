@@ -1,38 +1,39 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PersonalBlog.Domain.Entities;
 using PersonalBlog.Domain.Interfaces;
 
 namespace PersonalBlog.Infrastructure.Database.Repositories;
 
-public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
+public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
 	protected readonly DatabaseContext Context;
 	protected readonly DbSet<TEntity> DbSet;
 
-	protected BaseRepository(DatabaseContext context)
+	public BaseRepository(DatabaseContext context)
 	{
 		Context = context;
 		DbSet = context.Set<TEntity>();
 	}
 
-	public void Insert(TEntity entity)
+	public async Task<TEntity> AddAsync(TEntity entity)
 	{
-		DbSet.Add(entity);
+		await DbSet.AddAsync(entity);
+		return entity;
 	}
 
-	public TEntity? Get(Guid id)
+	public async Task<TEntity?> FindAsync(Guid id)
 	{
-		return DbSet.Find(id);
+		return await DbSet.FindAsync(id);
 	}
 
-	public void Update(TEntity entity)
+	public TEntity Update(TEntity entity)
 	{
 		DbSet.Update(entity);
+		return entity;
 	}
 
-	public void Delete(Guid id)
+	public async Task DeleteAsync(Guid id)
 	{
-		var entity = DbSet.Find(id);
+		var entity = await DbSet.FindAsync(id);
 		if (entity is not null)
 			DbSet.Remove(entity);
 	}
@@ -42,9 +43,9 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
 		return DbSet.AsNoTracking().AsQueryable();
 	}
 
-	public int SaveChanges()
+	public async Task<int> SaveChangesAsync()
 	{
-		return Context.SaveChanges();
+		return await Context.SaveChangesAsync();
 	}
 
 	public void Dispose()

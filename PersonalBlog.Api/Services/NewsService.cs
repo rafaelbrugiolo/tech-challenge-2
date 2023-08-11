@@ -1,43 +1,65 @@
 ﻿using AutoMapper;
+using PersonalBlog.Api.Commom;
 using PersonalBlog.Api.Dtos;
-using PersonalBlog.Api.Interfaces;
+using PersonalBlog.Domain.Entities;
 using PersonalBlog.Domain.Interfaces;
 
 namespace PersonalBlog.Api.Services;
 
 public class NewsService : INewsService
 {
-	private readonly INewsRepository _repository;
+	private readonly IBaseRepository<News> _repository;
 	private readonly IMapper _mapper;
 
-	public NewsService(INewsRepository repository, IMapper mapper)
+	public NewsService(IBaseRepository<News> repository, IMapper mapper)
 	{
 		_repository = repository;
 		_mapper = mapper;
 	}
 
-	public Task<NewsResponseDto> Insert(NewsRequestDto newsRequestDto)
+	public async Task<NewsResponseDto> Insert(NewsRequestInsertDto dto)
 	{
-		throw new NotImplementedException();
+		var news = _mapper.Map<News>(dto);
+		await _repository.AddAsync(news);
+		await _repository.SaveChangesAsync();
+		return _mapper.Map<NewsResponseDto>(news);
 	}
 
-	public Task<NewsResponseDto> GetById(Guid id)
+	public async Task<NewsResponseDto> GetById(Guid id)
 	{
-		throw new NotImplementedException();
+		var news = await _repository.FindAsync(id);
+		if (news is null)
+			throw new ResourceNotFoundException($"No news was found with the id: {id}");
+
+		return _mapper.Map<NewsResponseDto>(news);
 	}
 
-	public Task<IEnumerable<NewsResponseDto>> GetAll()
+	public IEnumerable<NewsResponseDto> GetAll()
 	{
-		throw new NotImplementedException();
+		var news = _repository.List().ToArray();
+		return _mapper.Map<IEnumerable<NewsResponseDto>>(news);
 	}
 
-	public Task<NewsResponseDto> Edit(Guid id, NewsRequestDto newsRequestDto)
+	public async Task<NewsResponseDto> Edit(Guid id, NewsRequestEditDto dto)
 	{
-		throw new NotImplementedException();
+		var news = await _repository.FindAsync(id);
+		if (news is null)
+			throw new ResourceNotFoundException($"No news was found with the id: {id}");
+
+		news.UpdateDetails(dto.Headline, dto.Content);
+		var savedNews = _repository.Update(news);
+		await _repository.SaveChangesAsync();
+
+		return _mapper.Map<NewsResponseDto>(savedNews);
 	}
 
-	public void DeleteById(Guid id)
+	public async Task DeleteByIdAsync(Guid id)
 	{
-		throw new NotImplementedException();
+		var news = await _repository.FindAsync(id);
+		if (news is null)
+			throw new ResourceNotFoundException($"No news was found with the id: {id}");
+		
+		await _repository.DeleteAsync(id);
+		await _repository.SaveChangesAsync();
 	}
 }
