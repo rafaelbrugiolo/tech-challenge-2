@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using PersonalBlog.Api.Commom;
 using PersonalBlog.Api.Dtos;
-using PersonalBlog.Api.Interfaces;
+using PersonalBlog.Api.Services;
 
 namespace PersonalBlog.Controllers;
 
@@ -15,32 +16,77 @@ public class NewsController : ControllerBase
 	}
 
 	[HttpGet("News")]
-	public async Task<IEnumerable<NewsResponseDto>> Get()
+	[ProducesResponseType(typeof(IEnumerable<NewsResponseDto>), StatusCodes.Status200OK)]
+	public IActionResult Get()
 	{
-		return await _newsService.GetAll();
+		if (!ModelState.IsValid)
+			return BadRequest(ModelState);
+
+		var result = _newsService.GetAll();
+		return Ok(result);
 	}
 
 	[HttpGet("News/{id}")]
-	public async Task<NewsResponseDto> Get(Guid id)
+	[ProducesResponseType(typeof(NewsResponseDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<IActionResult> Get(Guid id)
 	{
-		return await _newsService.GetById(id);
+		try
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			return Ok(await _newsService.GetById(id));
+		}
+		catch (ResourceNotFoundException ex)
+		{
+			return NotFound(ex.Message);
+		}
 	}
 
 	[HttpPost("News")]
-	public async Task<NewsResponseDto> Insert(NewsRequestDto newsResquestDto)
+	[ProducesResponseType(typeof(NewsResponseDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<IActionResult> Insert(NewsRequestInsertDto dto)
 	{
-		return await _newsService.Insert(newsResquestDto);
+		if (!ModelState.IsValid)
+			return BadRequest(ModelState);
+
+		var result = await _newsService.Insert(dto);
+		return Ok(result);
 	}
 
 	[HttpPut("News/{id}")]
-	public async Task<NewsResponseDto> Edit(Guid id, NewsRequestDto newsResquestDto)
+	[ProducesResponseType(typeof(NewsResponseDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Edit(Guid id, NewsRequestEditDto dto)
 	{
-		return await _newsService.Edit(id, newsResquestDto);
+		if (!ModelState.IsValid)
+			return BadRequest(ModelState);
+
+		var result = await _newsService.Edit(id, dto);
+		return Ok(result);
 	}
 
 	[HttpDelete("News/{id}")]
-	public void Delete(Guid id)
+	[ProducesResponseType(typeof(NewsResponseDto), StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Delete(Guid id)
 	{
-		_newsService.DeleteById(id);
+		try
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			await _newsService.DeleteByIdAsync(id);
+			return NoContent();
+		}
+		catch (ResourceNotFoundException ex)
+		{
+			return NotFound(ex.Message);
+		}
 	}
 }
