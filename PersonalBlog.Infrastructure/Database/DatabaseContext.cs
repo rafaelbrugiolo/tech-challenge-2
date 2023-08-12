@@ -14,7 +14,7 @@ public class DatabaseContext : DbContext
 		foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
 			relationship.DeleteBehavior = DeleteBehavior.NoAction;
 
-		new NewsMapping().Initialize(modelBuilder.Entity<News>());
+		new NewsMapping().Configure(modelBuilder.Entity<News>());
 
 		base.OnModelCreating(modelBuilder);
 	}

@@ -3,11 +3,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PersonalBlog.Domain.Entities;
 
 namespace PersonalBlog.Infrastructure.Database.Mappings;
-public class NewsMapping : BaseMapping<News>
+public class NewsMapping : IEntityTypeConfiguration<News>
 {
-	public override string TableName => "Product";
-	protected override void EntityMap(EntityTypeBuilder<News> builder)
+	public void Configure(EntityTypeBuilder<News> builder)
 	{
+		builder.ToTable(nameof(News));
+
+		builder.HasKey(x => x.Id);
+
 		builder.Property(p => p.Headline)
 			.IsRequired()
 			.HasColumnName("Headline");

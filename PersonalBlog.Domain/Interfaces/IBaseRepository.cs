@@ -2,13 +2,13 @@
 
 namespace PersonalBlog.Domain.Interfaces;
 
-public interface IBaseRepository<TEntity> where TEntity : BaseEntity
+public interface IBaseRepository<TEntity> where TEntity : class
 {
-	void Insert(TEntity entity);
-	TEntity? Get(Guid id);
-	void Update(TEntity entity);
-	void Delete(Guid id);
+	Task<TEntity> AddAsync(TEntity entity);
+	Task<TEntity?> FindAsync(Guid id);
+	TEntity Update(TEntity entity);
+	Task DeleteAsync(Guid id);
 	IEnumerable<TEntity> List();
-	int SaveChanges();
+	Task<int> SaveChangesAsync();
 	void Dispose();
 }

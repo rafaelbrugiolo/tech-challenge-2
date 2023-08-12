@@ -8,8 +8,8 @@ public class AutoMapperConfig : Profile
 {
 	public AutoMapperConfig()
 	{
-		CreateMap<News, NewsRequestDto>();
-		CreateMap<NewsRequestDto, News>();
+		CreateMap<News, NewsRequestInsertDto>();
+		CreateMap<NewsRequestInsertDto, News>();
 
 		CreateMap<News, NewsResponseDto>();
 		CreateMap<NewsResponseDto, News>();
